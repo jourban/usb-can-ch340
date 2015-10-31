@@ -1,6 +1,5 @@
-#26.10.2015 V0.6 urban
-
 #!/usr/bin/python3
+# v0.6 (c) 2015 urban
 
 import serial
 from serial.tools import list_ports
