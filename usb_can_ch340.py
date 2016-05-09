@@ -25,7 +25,7 @@ class USBCAN:
     Buserrors = {"rec-errors":0,"tr-errors":0,"errorflags":""}
     timeout   = 0
 
-    def __init__(self, canbaud, frtype, mode="normal", devname="USB-SERIAL CH340", baudrate=1228800, stopbits=1, timeout=1, writeTimeout=1, bytesize=8):
+    def __init__(self, canbaud, frtype, mode="normal", devname="1a86:7523", baudrate=1228800, stopbits=1, timeout=1, writeTimeout=1, bytesize=8):
         self.timeout = timeout
         self.initdevice(canbaud, frtype, mode, devname, baudrate, stopbits, timeout, writeTimeout, bytesize)
 
@@ -33,20 +33,29 @@ class USBCAN:
         self.canport = None
 
         # Search for CH340 Device
-        for port, devname, VID in list_ports.comports():
-            if "USB-SERIAL CH340" in devname or "HL-340 USB-Serial" in devname or "QinHeng Electronics" in devname:
-                print ("Found USB-CAN Device on ", port)
+        ports = list(list_ports.grep(devname))
+        if len(ports) == 0:
+            raise SystemError("No USB-CAN Device found by regexp '{}'".format(devname))
 
-                self.canport = serial.Serial(port, baudrate,
-                                    parity = serial.PARITY_NONE,
-                                    stopbits = stopbits, timeout = timeout,
-                                    writeTimeout = writeTimeout, bytesize = bytesize)
-                break
+        if len(ports) > 1:
+            ports_names = ""
+            for port, name, vid in ports:
+                ports_names += port + " "
+
+            raise SystemError("Find more then one device by regexp '{}', '{}'".format(devname, ports_names))
+
+        port = ports[0][0]
+
+        self.canport = serial.Serial(port, baudrate,
+                            parity = serial.PARITY_NONE,
+                            stopbits = stopbits, timeout = timeout,
+                            writeTimeout = writeTimeout, bytesize = bytesize)
 
         if not self.canport:
-            raise("No USB-CAN Device found, exiting!")
+            raise SystemError("Can't open USB-CAN Device {}".format(port))
+
         else:
-            print ("USB-CAN Device ready, Baud: ", canBaudrate)
+            print ("USB-CAN Device ready, CAN baudrate: ", canBaudrate)
 
         self.setup(canBaudrate, frtype, mode)
 
