@@ -133,7 +133,7 @@ class USBCAN:
         else:
             mlength  = "{:02X}".format(int(len(data) / 2))   #Nachrichtenlänge setzen
             mfformat = self.frfmt[mfformat]                  # setup frameformat
-            data+    = "0" * (16 - len(data))
+            data    += "0" * (16 - len(data))
 
 
         mmtype = self.mtype[mmtype]  # message type
